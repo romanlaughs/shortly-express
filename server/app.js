@@ -77,6 +77,15 @@ app.post('/links',
 // Write your authentication routes here
 /************************************************************/
 
+app.post('/signup',
+  (req, res, next) => {
+
+  });
+
+app.post('/login',
+  (req, res, next) => {
+
+  });
 
 
 /************************************************************/
