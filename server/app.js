@@ -86,13 +86,29 @@ app.get('/signup',
 app.post('/signup',
   (req, res) => {
     console.log(req.body);
-    var newUser = req.body.username;
-    var newPassword = req.body.password;
     return models.Users.get(req.body)
-      .then((input) => {
-        console.log(input);
+      .then(function(input) {
+        if (input) {
+          res.render('signup');
+          throw new Error('User already exists!');
+        } else {
+          return req.body;
+        }
       })
-      .then(res.render('index'));
+      .then(function(newUserInput) {
+        return models.Users.create(newUserInput);
+      })
+      .then(function(data) {
+        console.log('Success!! ');
+        res.end();
+      })
+      .catch(function(err) {
+        console.log('Oops, caught an error: ', err.message);
+        res.setHeader('location', '/signup');
+        res.sendStatus();
+        res.end();
+
+      });
 
   });
 

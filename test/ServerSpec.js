@@ -61,7 +61,7 @@ describe('', function() {
     afterEach(function() { server.close(); });
   });
 
-  describe('Database Schema:', function() {
+  xdescribe('Database Schema:', function() {
     it('contains a users table', function(done) {
       var queryString = 'SELECT * FROM users';
       db.query(queryString, function(err, results) {
@@ -123,9 +123,9 @@ describe('', function() {
     });
   });
 
-  xdescribe('Account Creation:', function() {
+  describe('Account Creation:', function() {
 
-    it('signup creates a new user record', function(done) {
+    xit('signup creates a new user record', function(done) {
       var options = {
         'method': 'POST',
         'uri': 'http://127.0.0.1:4568/signup',
@@ -136,10 +136,14 @@ describe('', function() {
       };
 
       request(options, function(error, res, body) {
+        console.log('REQUEST IS WORKING');
         var queryString = 'SELECT * FROM users where username = "Samantha"';
         db.query(queryString, function(err, rows) {
-          if (err) { done(err); }
+          if (err) {
+            done(err);
+          }
           var user = rows[0];
+          console.log('USER...', user);
           expect(user).to.exist;
           expect(user.username).to.equal('Samantha');
           done();
@@ -147,7 +151,7 @@ describe('', function() {
       });
     });
 
-    it('does not store the user\'s original text password', function(done) {
+    xit('does not store the user\'s original text password', function(done) {
       var options = {
         'method': 'POST',
         'uri': 'http://127.0.0.1:4568/signup',
@@ -184,13 +188,14 @@ describe('', function() {
         if (error) { return done(error); }
         request(options, function(err, response, resBody) {
           if (err) { return done(err); }
+          console.log('TEST response header ', response.headers);
           expect(response.headers.location).to.equal('/signup');
           done();
         });
       });
     });
 
-    it('redirects to index after user is created', function(done) {
+    xit('redirects to index after user is created', function(done) {
       var options = {
         'method': 'POST',
         'uri': 'http://127.0.0.1:4568/signup',
@@ -329,7 +334,7 @@ describe('', function() {
     var cookieParser = require('../server/middleware/cookieParser.js');
     var createSession = require('../server/middleware/auth.js').createSession;
 
-    describe('Cookie Parser', function() {
+    xdescribe('Cookie Parser', function() {
 
       it('parses cookies and assigns an object of key-value pairs to a session property on the request', function(done) {
         var requestWithoutCookies = httpMocks.createRequest();
@@ -371,7 +376,7 @@ describe('', function() {
       });
     });
 
-    describe('Session Parser', function() {
+    xdescribe('Session Parser', function() {
       it('initializes a new session when there are no cookies on the request', function(done) {
         var requestWithoutCookies = httpMocks.createRequest();
         var response = httpMocks.createResponse();
@@ -627,7 +632,7 @@ describe('', function() {
       requestWithSession('http://127.0.0.1:4568/logout', done);
     });
 
-    describe('Creating new links:', function(done) {
+    xdescribe('Creating new links:', function(done) {
 
       it('Only shortens valid urls, returning a 404 - Not found for invalid urls', function(done) {
         var options = {
@@ -686,7 +691,7 @@ describe('', function() {
       });
     });
 
-    describe('With previously saved urls:', function() {
+    xdescribe('With previously saved urls:', function() {
 
       var link;
 
