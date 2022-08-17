@@ -77,13 +77,34 @@ app.post('/links',
 // Write your authentication routes here
 /************************************************************/
 
+
+app.get('/signup',
+  (req, res) => {
+    res.render('signup');
+  });
+
 app.post('/signup',
-  (req, res, next) => {
+  (req, res) => {
+    console.log(req.body);
+    var newUser = req.body.username;
+    var newPassword = req.body.password;
+    return models.Users.get(req.body)
+      .then((input) => {
+        console.log(input);
+      })
+      .then(res.render('index'));
 
   });
 
+
+
+app.get('/login',
+  (req, res) => {
+    res.render('login');
+  });
+
 app.post('/login',
-  (req, res, next) => {
+  (req, res) => {
 
   });
 
