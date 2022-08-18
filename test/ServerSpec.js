@@ -123,7 +123,7 @@ describe('', function() {
     });
   });
 
-  describe('Account Creation:', function() {
+  xdescribe('Account Creation:', function() {
 
     xit('signup creates a new user record', function(done) {
       var options = {
@@ -174,7 +174,7 @@ describe('', function() {
       });
     });
 
-    it('redirects to signup if the user already exists', function(done) {
+    xit('redirects to signup if the user already exists', function(done) {
       var options = {
         'method': 'POST',
         'uri': 'http://127.0.0.1:4568/signup',
@@ -195,7 +195,7 @@ describe('', function() {
       });
     });
 
-    xit('redirects to index after user is created', function(done) {
+    it('redirects to index after user is created', function(done) {
       var options = {
         'method': 'POST',
         'uri': 'http://127.0.0.1:4568/signup',
@@ -213,7 +213,7 @@ describe('', function() {
     });
   });
 
-  xdescribe('Account Login:', function() {
+  describe('Account Login:', function() {
 
     beforeEach(function(done) {
       var options = {
