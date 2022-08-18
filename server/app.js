@@ -85,11 +85,17 @@ app.get('/signup',
 
 app.post('/signup',
   (req, res) => {
-    console.log(req.body);
-    return models.Users.get(req.body)
+    models.Users.get(req.body, (err, newTodo) => {
+      if (err) {
+        res.render('signup');
+        throw new Error('User already exists!');
+      } else {
+        return req.body;
+      }
+    })
       .then(function(input) {
+        console.log('INPUT ', input);
         if (input) {
-          res.render('signup');
           throw new Error('User already exists!');
         } else {
           return req.body;
@@ -100,14 +106,14 @@ app.post('/signup',
       })
       .then(function(data) {
         console.log('Success!! ');
+        res.render('index');
         res.end();
       })
       .catch(function(err) {
+        res.render('signup');
+        console.log(res.headers);
         console.log('Oops, caught an error: ', err.message);
-        res.setHeader('location', '/signup');
-        res.sendStatus();
         res.end();
-
       });
 
   });
