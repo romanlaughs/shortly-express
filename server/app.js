@@ -85,37 +85,17 @@ app.get('/signup',
 
 app.post('/signup',
   (req, res) => {
-    models.Users.get(req.body, (err, newTodo) => {
-      if (err) {
-        res.render('signup');
-        throw new Error('User already exists!');
-      } else {
-        return req.body;
-      }
-    })
-      .then(function(input) {
-        console.log('INPUT ', input);
-        if (input) {
-          throw new Error('User already exists!');
-        } else {
-          return req.body;
-        }
-      })
-      .then(function(newUserInput) {
-        return models.Users.create(newUserInput);
-      })
+    models.Users.create(req.body)
       .then(function(data) {
-        console.log('Success!! ');
-        res.render('index');
+        res.redirect('/');
         res.end();
       })
       .catch(function(err) {
-        res.render('signup');
-        console.log(res.headers);
-        console.log('Oops, caught an error: ', err.message);
-        res.end();
+        if (err.errno === 1062) {
+          res.redirect('/signup');
+          res.end();
+        }
       });
-
   });
 
 
@@ -127,7 +107,30 @@ app.get('/login',
 
 app.post('/login',
   (req, res) => {
-
+    models.Users.get({ username: req.body.username })
+      .then(result => {
+        if (result === undefined) {
+          res.redirect('/login');
+          throw new Error('User does not exist');
+        } else {
+          return models.Users.compare(req.body.password, result.password, result.salt);
+        }
+      })
+      .then(validPassword => {
+        if (!validPassword) {
+          res.redirect('/login');
+          throw new Error('Password Incorrect');
+        } else {
+          //Create a session, save a cookie stuff...
+          res.redirect('/');
+        }
+      })
+      .catch(function(err) {
+        console.log('Error ', err.message);
+      })
+      .finally(() => {
+        res.end();
+      });
   });
 
 

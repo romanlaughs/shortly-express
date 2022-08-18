@@ -67,7 +67,6 @@ class Model {
    */
   create(options) {
     let queryString = `INSERT INTO ${this.tablename} SET ?`;
-    console.log('About to put into DB');
     return executeQuery(queryString, options);
   }
 
