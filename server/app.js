@@ -107,7 +107,30 @@ app.get('/login',
 
 app.post('/login',
   (req, res) => {
-
+    models.Users.get({ username: req.body.username })
+      .then(result => {
+        if (result === undefined) {
+          res.redirect('/login');
+          throw new Error('User does not exist');
+        } else {
+          return models.Users.compare(req.body.password, result.password, result.salt);
+        }
+      })
+      .then(validPassword => {
+        if (!validPassword) {
+          res.redirect('/login');
+          throw new Error('Password Incorrect');
+        } else {
+          //Create a session, save a cookie stuff...
+          res.redirect('/');
+        }
+      })
+      .catch(function(err) {
+        console.log('Error ', err.message);
+      })
+      .finally(() => {
+        res.end();
+      });
   });
 
 
