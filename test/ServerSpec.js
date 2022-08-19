@@ -334,7 +334,7 @@ describe('', function() {
     var cookieParser = require('../server/middleware/cookieParser.js');
     var createSession = require('../server/middleware/auth.js').createSession;
 
-    describe('Cookie Parser', function() {
+    xdescribe('Cookie Parser', function() {
 
       it('parses cookies and assigns an object of key-value pairs to a session property on the request', function(done) {
         var requestWithoutCookies = httpMocks.createRequest();
@@ -376,7 +376,7 @@ describe('', function() {
       });
     });
 
-    xdescribe('Session Parser', function() {
+    describe('Session Parser', function() {
       it('initializes a new session when there are no cookies on the request', function(done) {
         var requestWithoutCookies = httpMocks.createRequest();
         var response = httpMocks.createResponse();
