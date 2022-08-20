@@ -51,6 +51,7 @@ class Sessions extends Model {
    * an insert query or rejected with the error that occured.
    */
   create() {
+    console.log('Sessions.create was called!');
     let data = utils.createRandom32String();
     let hash = utils.createHash(data);
     return super.create.call(this, { hash });

@@ -3,6 +3,7 @@ const path = require('path');
 const utils = require('./lib/hashUtils');
 const partials = require('express-partials');
 const Auth = require('./middleware/auth');
+const cookieParser = require('./middleware/cookieParser');
 const models = require('./models');
 
 const app = express();
@@ -14,19 +15,20 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../public')));
 
+//app.use('/', Auth.verifySession);
 
 
-app.get('/',
+app.get('/', Auth.verifySession,
   (req, res) => {
     res.render('index');
   });
 
-app.get('/create',
+app.get('/create', Auth.verifySession,
   (req, res) => {
     res.render('index');
   });
 
-app.get('/links',
+app.get('/links', Auth.verifySession,
   (req, res, next) => {
     models.Links.getAll()
       .then(links => {
@@ -85,17 +87,57 @@ app.get('/signup',
 
 app.post('/signup',
   (req, res) => {
-    models.Users.create(req.body)
-      .then(function(data) {
-        res.redirect('/');
-        res.end();
+    // check if user exists
+    models.Users.get({ username: req.body.username })
+      .then((user) => {
+        console.log('all users: ', user);
+        if (user) {
+          console.log('user exists!');
+          //alert('User already exists.');
+          res.redirect('signup');
+
+        } else {
+          // create a user
+          models.Users.create(req.body)
+            .then(function(userData) {
+              // create session in DB
+              models.Sessions.create()
+                .then((sessionData) => {
+                  var options = {
+                    id: sessionData.insertId
+                  };
+                  //.then - update session DB with data.insertId and return info for createSession
+                  var newValues = {
+                    userId: userData.insertId
+                  };
+                  models.Sessions.update(options, newValues)
+                    .then((data) => {
+                      models.Sessions.get({ id: sessionData.insertId })
+                        .then((row) => {
+                          res.cookie('shortlyid', row.hash);
+                          res.setHeader('cookie', `shortlyid=${row.hash}`);
+                          console.log('cookie is: ', req.cookies);
+                          //.then - run auth.createSession
+                          Auth.createSession(req, res, () => {})
+                            .then((data) => {
+                              // do stuff after creating user, same stuff as login probably
+                              res.redirect('/');
+                            });
+                        });
+                    });
+                });
+            });
+        }
+
       })
       .catch(function(err) {
         if (err.errno === 1062) {
           res.redirect('/signup');
-          res.end();
+          //res.end();
         }
       });
+
+
   });
 
 
