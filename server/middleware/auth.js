@@ -4,7 +4,8 @@ const parseCookies = require('./cookieParser');
 
 module.exports.createSession = (req, res, next) => {
   // if no shortly cookie
-  if (!req.cookies.shortlyid) {
+  if (!req.cookies || !req.cookies.shortlyid) {
+    console.log('NO COOKIE!');
     return models.Sessions.create()
       .then(createdData => {
         return models.Sessions.get({'id': createdData.insertId});
@@ -22,7 +23,7 @@ module.exports.createSession = (req, res, next) => {
     return models.Sessions.get({'hash': req.cookies.shortlyid})
       .then(gottenData => {
         if (gottenData) {
-
+          // if Session assigned to cookie
           req.session = {hash: gottenData.hash};
           // if session specifies user ID, add user data
           if (gottenData.userId) {
@@ -32,6 +33,7 @@ module.exports.createSession = (req, res, next) => {
           }
           req.headers.cookie = res.cookie('shortlyid', gottenData.hash);
           next();
+          // if No Session assigned to cookie
         } else {
           return models.Sessions.create()
             .then(createdData => {
@@ -55,3 +57,21 @@ module.exports.createSession = (req, res, next) => {
 // Add additional authentication middleware functions below
 /************************************************************/
 
+module.exports.verifySession = (req, res, next) => {
+  // check cookie exists
+  if (!req.cookies || !req.cookies.shortlyid) {
+    res.redirect('signup');
+    //return next();
+
+  } else {
+    // Cookie exists
+    // check session
+    if (models.Session.isLoggedIn(req.session)) {
+      // session is good
+      return;
+    } else {
+      res.redirect('login');
+      //return next();
+    }
+  }
+};
