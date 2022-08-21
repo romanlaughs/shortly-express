@@ -61,7 +61,7 @@ describe('', function() {
     afterEach(function() { server.close(); });
   });
 
-  xdescribe('Database Schema:', function() {
+  describe('Database Schema:', function() {
     it('contains a users table', function(done) {
       var queryString = 'SELECT * FROM users';
       db.query(queryString, function(err, results) {
@@ -123,9 +123,9 @@ describe('', function() {
     });
   });
 
-  xdescribe('Account Creation:', function() {
+  describe('Account Creation:', function() {
 
-    xit('signup creates a new user record', function(done) {
+    it('signup creates a new user record', function(done) {
       var options = {
         'method': 'POST',
         'uri': 'http://127.0.0.1:4568/signup',
@@ -151,7 +151,7 @@ describe('', function() {
       });
     });
 
-    xit('does not store the user\'s original text password', function(done) {
+    it('does not store the user\'s original text password', function(done) {
       var options = {
         'method': 'POST',
         'uri': 'http://127.0.0.1:4568/signup',
@@ -174,7 +174,7 @@ describe('', function() {
       });
     });
 
-    xit('redirects to signup if the user already exists', function(done) {
+    it('redirects to signup if the user already exists', function(done) {
       var options = {
         'method': 'POST',
         'uri': 'http://127.0.0.1:4568/signup',
@@ -207,13 +207,14 @@ describe('', function() {
 
       request(options, function(error, res, body) {
         if (error) { return done(error); }
+        console.log('LOCATION: ', res.headers.location);
         expect(res.headers.location).to.equal('/');
         done();
       });
     });
   });
 
-  xdescribe('Account Login:', function() {
+  describe('Account Login:', function() {
 
     beforeEach(function(done) {
       var options = {
@@ -282,7 +283,7 @@ describe('', function() {
     });
   });
 
-  xdescribe('Sessions Schema:', function() {
+  describe('Sessions Schema:', function() {
     it('contains a sessions table', function(done) {
       var queryString = 'SELECT * FROM sessions';
       db.query(queryString, function(err, results) {
@@ -334,7 +335,7 @@ describe('', function() {
     var cookieParser = require('../server/middleware/cookieParser.js');
     var createSession = require('../server/middleware/auth.js').createSession;
 
-    xdescribe('Cookie Parser', function() {
+    describe('Cookie Parser', function() {
 
       it('parses cookies and assigns an object of key-value pairs to a session property on the request', function(done) {
         var requestWithoutCookies = httpMocks.createRequest();
@@ -575,7 +576,7 @@ describe('', function() {
     });
   });
 
-  xdescribe('Privileged Access:', function() {
+  describe('Privileged Access:', function() {
 
     it('Redirects to login page if a user tries to access the main page and is not signed in', function(done) {
       request('http://127.0.0.1:4568/', function(error, res, body) {
@@ -602,7 +603,7 @@ describe('', function() {
     });
   });
 
-  xdescribe('Link creation:', function() {
+  describe('Link creation:', function() {
 
     var cookies = request.jar();
     var requestWithSession = request.defaults({ jar: cookies });
@@ -632,7 +633,7 @@ describe('', function() {
       requestWithSession('http://127.0.0.1:4568/logout', done);
     });
 
-    xdescribe('Creating new links:', function(done) {
+    describe('Creating new links:', function(done) {
 
       it('Only shortens valid urls, returning a 404 - Not found for invalid urls', function(done) {
         var options = {
@@ -691,7 +692,7 @@ describe('', function() {
       });
     });
 
-    xdescribe('With previously saved urls:', function() {
+    describe('With previously saved urls:', function() {
 
       var link;
 

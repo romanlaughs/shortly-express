@@ -1,30 +1,22 @@
-const helper = function(acc = {}, cookieInput) {
-  var array = cookieInput.trim().split('=');
-  //Awesome Job!!!!
-  var obj = {};
-  obj[array[0]] = array[1];
-  return Object.assign(acc, obj);
-};
+
 
 const parseCookies = (req, res, next) => {
-  const cookie = req.headers.cookie;
 
-  if (cookie === undefined) {
-    res.end({});
+  let cookieString = req.get('Cookie');
+
+  if (!cookieString) {
     next();
-    return;
   }
 
-  let parsedCookies = cookie.split(';');
-
-  if (Array.isArray(parsedCookies)) {
-    parsedCookies = parsedCookies.reduce(helper, {});
-  } else {
-    parsedCookies = helper({}, parsedCookies);
-  }
+  let parsedCookies = cookieString.split('; ').reduce((cookies, cookie) => {
+    if (cookie) {
+      let cookieParts = cookie.split('=');
+      cookies[cookieParts[0]] = cookieParts[1];
+    }
+    return cookies;
+  }, {});
 
   req.cookies = parsedCookies;
-  res.end();
   next();
 };
 

@@ -15,31 +15,29 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../public')));
 
-//app.use('/', Auth.verifySession);
+app.use(require('./middleware/cookieParser'));
+app.use(Auth.createSession);
 
 
-app.get('/', Auth.verifySession,
-  (req, res) => {
-    res.render('index');
-  });
+app.get('/', Auth.verifySession, (req, res) => {
+  res.render('index');
+});
 
-app.get('/create', Auth.verifySession,
-  (req, res) => {
-    res.render('index');
-  });
+app.get('/create', Auth.verifySession, (req, res) => {
+  res.render('index');
+});
 
-app.get('/links', Auth.verifySession,
-  (req, res, next) => {
-    models.Links.getAll()
-      .then(links => {
-        res.status(200).send(links);
-      })
-      .error(error => {
-        res.status(500).send(error);
-      });
-  });
+app.get('/links', Auth.verifySession, (req, res, next) => {
+  models.Links.getAll()
+    .then(links => {
+      res.status(200).send(links);
+    })
+    .error(error => {
+      res.status(500).send(error);
+    });
+});
 
-app.post('/links',
+app.post('/links', Auth.verifySession,
   (req, res, next) => {
     var url = req.body.url;
     if (!models.Links.isValidUrl(url)) {
@@ -80,101 +78,66 @@ app.post('/links',
 /************************************************************/
 
 
-app.get('/signup',
-  (req, res) => {
-    res.render('signup');
-  });
+/***********************************************************
+ * SIGN UP ROUTES
+ **********************************************************/
+app.get('/signup', (req, res) => {
+  res.render('signup');
+});
+
 
 app.post('/signup',
   (req, res) => {
-    // check if user exists
-    models.Users.get({ username: req.body.username })
-      .then((user) => {
-        console.log('all users: ', user);
+    var username = req.body.username;
+    var password = req.body.password;
+    models.Users.get({username})
+      .then(user => {
         if (user) {
-          console.log('user exists!');
-          //alert('User already exists.');
-          res.redirect('signup');
-
-        } else {
-          // create a user
-          models.Users.create(req.body)
-            .then(function(userData) {
-              // create session in DB
-              models.Sessions.create()
-                .then((sessionData) => {
-                  var options = {
-                    id: sessionData.insertId
-                  };
-                  //.then - update session DB with data.insertId and return info for createSession
-                  var newValues = {
-                    userId: userData.insertId
-                  };
-                  models.Sessions.update(options, newValues)
-                    .then((data) => {
-                      models.Sessions.get({ id: sessionData.insertId })
-                        .then((row) => {
-                          res.cookie('shortlyid', row.hash);
-                          res.setHeader('cookie', `shortlyid=${row.hash}`);
-                          console.log('cookie is: ', req.cookies);
-                          //.then - run auth.createSession
-                          Auth.createSession(req, res, () => {})
-                            .then((data) => {
-                              // do stuff after creating user, same stuff as login probably
-                              res.redirect('/');
-                            });
-                        });
-                    });
-                });
-            });
+          throw user;
         }
-
+        return models.Users.create({username, password});
       })
-      .catch(function(err) {
-        if (err.errno === 1062) {
-          res.redirect('/signup');
-          //res.end();
-        }
-      });
-
-
-  });
-
-
-
-app.get('/login',
-  (req, res) => {
-    res.render('login');
-  });
-
-app.post('/login',
-  (req, res) => {
-    models.Users.get({ username: req.body.username })
-      .then(result => {
-        if (result === undefined) {
-          res.redirect('/login');
-          throw new Error('User does not exist');
-        } else {
-          return models.Users.compare(req.body.password, result.password, result.salt);
-        }
+      .then(results => {
+        return models.Sessions.update({id: req.session.id}, {userId: results.insertId});
       })
-      .then(validPassword => {
-        if (!validPassword) {
-          res.redirect('/login');
-          throw new Error('Password Incorrect');
-        } else {
-          //Create a session, save a cookie stuff...
-          res.redirect('/');
-        }
+      .then(user => {
+        res.redirect('/');
       })
-      .catch(function(err) {
-        console.log('Error ', err.message);
-      })
-      .finally(() => {
-        res.end();
+      .catch(user => {
+        res.redirect('/signup');
       });
   });
 
+
+/***********************************************************
+ * LOG-IN & LOG-OUT ROUTES
+ **********************************************************/
+
+app.get('/login', (req, res) => {
+  res.render('login');
+});
+
+app.post('/login', (req, res) => {
+  var username = req.body.username;
+  var password = req.body.password;
+  models.Users.get({username})
+    .then(user => {
+      if (!user || !models.Users.compare(password, user.password, user.salt)) {
+        throw user;
+      }
+      return models.Sessions.update({id: req.session.id}, {userId: user.id});
+    })
+    .then(() => {
+      res.redirect('/');
+    })
+    .catch(user => {
+      res.redirect('/login');
+    });
+});
+
+app.get('/logout', (req, res) => {
+  res.redirect('/login');
+});
 
 /************************************************************/
 // Handle the code parameter route last - if all other routes fail
